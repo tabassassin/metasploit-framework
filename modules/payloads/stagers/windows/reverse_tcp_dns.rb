@@ -72,7 +72,7 @@ module Metasploit3
 		], self.class)
 	end
 
-	def generate
+	def payload
 		p = super
 
 		i = p.index("X" * 63)
