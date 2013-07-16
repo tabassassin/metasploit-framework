@@ -559,7 +559,7 @@ require 'digest/sha1'
 
 		if(opts[:inject])
 			raise RuntimeError, "Injection is not yet supported on 64 bit dll"
-		else
+		end
 
 		bo = pe.index('PAYLOAD:')
 		raise RuntimeError, "Invalid Win64 PE DLL template: missing \"PAYLOAD:\" tag" if not bo
