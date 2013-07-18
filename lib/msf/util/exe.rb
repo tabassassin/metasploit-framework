@@ -532,13 +532,17 @@ require 'digest/sha1'
 			pe = fd.read(fd.stat.size)
 		}
 
-		bo = pe.index('PAYLOAD:')
-		raise RuntimeError, "Invalid Win32 PE DLL template: missing \"PAYLOAD:\" tag" if not bo
-		pe[bo, 8192] = [code].pack("a8192")
+		if(opts[:inject])
+			pe = self.to_win32pe(framework, code, opts)
+		else
+			bo = pe.index('PAYLOAD:')
+			raise RuntimeError, "Invalid Win32 PE DLL template: missing \"PAYLOAD:\" tag" if not bo
+			pe[bo, 8192] = [code].pack("a8192")
 
-		# optional mutex
-		mt = pe.index('MUTEX!!!')
-		pe[mt,8] = Rex::Text.rand_text_alpha(8) if mt
+			# optional mutex
+			mt = pe.index('MUTEX!!!')
+			pe[mt,8] = Rex::Text.rand_text_alpha(8) if mt
+		end
 
 		return pe
 	end
@@ -552,6 +556,10 @@ require 'digest/sha1'
 		File.open(opts[:template], "rb") { |fd|
 			pe = fd.read(fd.stat.size)
 		}
+
+		if(opts[:inject])
+			raise RuntimeError, "Injection is not yet supported on 64 bit dll"
+		end
 
 		bo = pe.index('PAYLOAD:')
 		raise RuntimeError, "Invalid Win64 PE DLL template: missing \"PAYLOAD:\" tag" if not bo
