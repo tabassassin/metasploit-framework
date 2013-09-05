@@ -495,113 +495,113 @@ class Payload < Msf::Module
 
 protected
 
-	#
-	# If the payload has assembly that needs to be compiled, do so now.
-	#
-	# Blobs will be cached in the framework's PayloadSet
-	#
-	# @see PayloadSet#check_blob_cache
-	# @param asm [String] Assembly code to be assembled into a raw payload
-	# @return [String] The final, assembled payload
-	# @raise ArgumentError if +asm+ is blank
-	def build(asm, off={})
-		if(asm.nil? or asm.empty?)
-			raise ArgumentError, "Assembly must not be empty"
-		end
+  #
+  # If the payload has assembly that needs to be compiled, do so now.
+  #
+  # Blobs will be cached in the framework's PayloadSet
+  #
+  # @see PayloadSet#check_blob_cache
+  # @param asm [String] Assembly code to be assembled into a raw payload
+  # @return [String] The final, assembled payload
+  # @raise ArgumentError if +asm+ is blank
+  def build(asm, off={})
+    if(asm.nil? or asm.empty?)
+      raise ArgumentError, "Assembly must not be empty"
+    end
 
-		# Use the refname so blobs can be flushed when the module gets
-		# reloaded and use the hash value to ensure that we're actually
-		# getting the right blob for the given assembly.
-		cache_key   = refname + asm.hash.to_s
-		cache_entry = framework.payloads.check_blob_cache(cache_key)
+    # Use the refname so blobs can be flushed when the module gets
+    # reloaded and use the hash value to ensure that we're actually
+    # getting the right blob for the given assembly.
+    cache_key   = refname + asm.hash.to_s
+    cache_entry = framework.payloads.check_blob_cache(cache_key)
 
-		off.each_pair { |option, val|
-			if (val[1] == 'RAW')
-				asm = asm.gsub(/#{option}/){ datastore[option] }
-				off.delete(option)
-			end
-		}
+    off.each_pair { |option, val|
+      if (val[1] == 'RAW')
+        asm = asm.gsub(/#{option}/){ datastore[option] }
+        off.delete(option)
+      end
+    }
 
-		# If there is a valid cache entry, then we don't need to worry about
-		# rebuilding the assembly
-		if cache_entry
-			# Update the local offsets from the cache
-			off.each_key { |option|
-				off[option] = cache_entry[1][option]
-			}
+    # If there is a valid cache entry, then we don't need to worry about
+    # rebuilding the assembly
+    if cache_entry
+      # Update the local offsets from the cache
+      off.each_key { |option|
+        off[option] = cache_entry[1][option]
+      }
 
-			# Return the cached payload blob
-			return cache_entry[0].dup
-		end
+      # Return the cached payload blob
+      return cache_entry[0].dup
+    end
 
-		# Assemble the payload from the assembly
-		a = self.arch
-		if a.kind_of? Array
-			a = self.arch.first
-		end
-		cpu = case a
-			when ARCH_X86    then Metasm::Ia32.new
-			when ARCH_X86_64 then Metasm::X86_64.new
-			when ARCH_X64    then Metasm::X86_64.new
-			when ARCH_PPC    then Metasm::PowerPC.new
-			when ARCH_ARMLE  then Metasm::ARM.new
-			else
-				elog("Broken payload #{refname} has arch unsupported with assembly: #{module_info["Arch"].inspect}")
-				elog("Call stack:\n#{caller.join("\n")}")
-				return ""
-			end
-		sc = Metasm::Shellcode.assemble(cpu, asm).encoded
+    # Assemble the payload from the assembly
+    a = self.arch
+    if a.kind_of? Array
+      a = self.arch.first
+    end
+    cpu = case a
+      when ARCH_X86    then Metasm::Ia32.new
+      when ARCH_X86_64 then Metasm::X86_64.new
+      when ARCH_X64    then Metasm::X86_64.new
+      when ARCH_PPC    then Metasm::PowerPC.new
+      when ARCH_ARMLE  then Metasm::ARM.new
+      else
+        elog("Broken payload #{refname} has arch unsupported with assembly: #{module_info["Arch"].inspect}")
+        elog("Call stack:\n#{caller.join("\n")}")
+        return ""
+      end
+    sc = Metasm::Shellcode.assemble(cpu, asm).encoded
 
-		# Calculate the actual offsets now that it's been built
-		off.each_pair { |option, val|
-			off[option] = [ sc.offset_of_reloc(option) || val[0], val[1] ]
-		}
+    # Calculate the actual offsets now that it's been built
+    off.each_pair { |option, val|
+      off[option] = [ sc.offset_of_reloc(option) || val[0], val[1] ]
+    }
 
-		# Cache the payload blob
-		framework.payloads.add_blob_cache(cache_key, sc.data, off)
+    # Cache the payload blob
+    framework.payloads.add_blob_cache(cache_key, sc.data, off)
 
-		# Return a duplicated copy of the assembled payload
-		sc.data.dup
-	end
+    # Return a duplicated copy of the assembled payload
+    sc.data.dup
+  end
 
-	#
-	# Generate the payload using our local payload blob and offsets
-	#
-	def internal_generate
-		# Build the payload, either by using the raw payload blob defined in the
-		# module or by actually assembling it
-		if assembly and !assembly.empty?
-			raw = build(assembly, offsets)
-		else
-			raw = payload.dup
-		end
+  #
+  # Generate the payload using our local payload blob and offsets
+  #
+  def internal_generate
+    # Build the payload, either by using the raw payload blob defined in the
+    # module or by actually assembling it
+    if assembly and !assembly.empty?
+      raw = build(assembly, offsets)
+    else
+      raw = payload.dup
+    end
 
-		# If the payload is generated and there are offsets to substitute,
-		# do that now.
-		if (raw and offsets)
-			substitute_vars(raw, offsets)
-		end
+    # If the payload is generated and there are offsets to substitute,
+    # do that now.
+    if (raw and offsets)
+      substitute_vars(raw, offsets)
+    end
 
-		return raw
-	end
+    return raw
+  end
 
-	##
-	#
-	# Custom merge operations for payloads
-	#
-	##
+  ##
+  #
+  # Custom merge operations for payloads
+  #
+  ##
 
-	#
-	# Merge the name to prefix the existing one and separate them
-	# with a comma
-	#
-	def merge_name(info, val)
-		if (info['Name'])
-			info['Name'] = val + ',' + info['Name']
-		else
-			info['Name'] = val
-		end
-	end
+  #
+  # Merge the name to prefix the existing one and separate them
+  # with a comma
+  #
+  def merge_name(info, val)
+    if (info['Name'])
+      info['Name'] = val + ',' + info['Name']
+    else
+      info['Name'] = val
+    end
+  end
 
 end
 

@@ -177,7 +177,7 @@ module Framework
 
 protected
 
-	attr_writer :stats # :nodoc:
+  attr_writer :stats # :nodoc:
 
 end
 

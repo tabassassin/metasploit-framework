@@ -42,18 +42,18 @@ module Metasploit
 				@env = ActiveSupport::StringInquirer.new(name)
 			end
 
-			@env
-		end
+      @env
+    end
 
-		# Returns the root of the metasploit-framework project.  Use in place of
-		# `Rails.root`.
-		#
-		# @return [Pathname]
-		def self.root
-			unless instance_variable_defined? :@root
-				pathname = Pathname.new(__FILE__)
-				@root = pathname.parent.parent.parent
-			end
+    # Returns the root of the metasploit-framework project.  Use in place of
+    # `Rails.root`.
+    #
+    # @return [Pathname]
+    def self.root
+      unless instance_variable_defined? :@root
+        pathname = Pathname.new(__FILE__)
+        @root = pathname.parent.parent.parent
+      end
 
 			@root
 		end

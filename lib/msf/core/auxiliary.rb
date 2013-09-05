@@ -149,8 +149,8 @@ class Auxiliary < Msf::Module
 
 protected
 
-	attr_accessor :sockets
-	attr_writer :passive
+  attr_accessor :sockets
+  attr_writer :passive
 
 end
 

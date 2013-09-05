@@ -11,57 +11,57 @@ module Msf
 ###
 class EncoderState
 
-	#
-	# Initializes a new encoder state, optionally with a key.
-	#
-	def initialize(key = nil)
-		@orig_buf = nil
-		@buf = nil
-		reset(key)
-	end
+  #
+  # Initializes a new encoder state, optionally with a key.
+  #
+  def initialize(key = nil)
+    @orig_buf = nil
+    @buf = nil
+    reset(key)
+  end
 
-	#
-	# Reset the encoder state by initializing the encoded buffer to an empty
-	# string.
-	#
-	def reset(key = nil)
-		init_key(key)
+  #
+  # Reset the encoder state by initializing the encoded buffer to an empty
+  # string.
+  #
+  def reset(key = nil)
+    init_key(key)
 
-		self.encoded  = ''
-	end
+    self.encoded  = ''
+  end
 
-	#
-	# Set the initial encoding key.
-	#
-	def init_key(key)
-		self.key      = key
-		self.orig_key = key
-	end
+  #
+  # Set the initial encoding key.
+  #
+  def init_key(key)
+    self.key      = key
+    self.orig_key = key
+  end
 
-	#
-	# Set the raw buffer and the original buffer if one has not been set.
-	#
-	def buf=(buf)
-		@orig_buf = buf if (@orig_buf == nil or @buf == nil)
-		@buf = buf
-	end
+  #
+  # Set the raw buffer and the original buffer if one has not been set.
+  #
+  def buf=(buf)
+    @orig_buf = buf if (@orig_buf == nil or @buf == nil)
+    @buf = buf
+  end
 
-	attr_accessor :key # :nodoc:
-	attr_accessor :orig_key # :nodoc:
-	attr_reader   :buf # :nodoc:
-	attr_reader   :orig_buf # :nodoc:
-	attr_accessor :encoded # :nodoc:
-	attr_accessor :context # :nodoc:
-	attr_accessor :badchars # :nodoc:
+  attr_accessor :key # :nodoc:
+  attr_accessor :orig_key # :nodoc:
+  attr_reader   :buf # :nodoc:
+  attr_reader   :orig_buf # :nodoc:
+  attr_accessor :encoded # :nodoc:
+  attr_accessor :context # :nodoc:
+  attr_accessor :badchars # :nodoc:
 
-	# A boolean that indicates whether context encoding is enabled
-	attr_accessor :context_encoding
-	# The address that contains they key on the target machine
-	attr_accessor :context_address
+  # A boolean that indicates whether context encoding is enabled
+  attr_accessor :context_encoding
+  # The address that contains they key on the target machine
+  attr_accessor :context_address
 
-	# Decoder settings
-	attr_accessor :decoder_key_offset, :decoder_key_size, :decoder_key_pack # :nodoc:
-	attr_accessor :decoder_stub # :nodoc:
+  # Decoder settings
+  attr_accessor :decoder_key_offset, :decoder_key_size, :decoder_key_pack # :nodoc:
+  attr_accessor :decoder_stub # :nodoc:
 
 end
 
@@ -392,234 +392,234 @@ class Encoder < Module
 
 protected
 
-	#
-	# Initializes the encoding state supplied as an argument to the attributes
-	# that have been defined for this decoder stub, such as key offset, size,
-	# and pack.
-	#
-	def init_state(state)
-		# Update the state with default decoder information
-		state.decoder_key_offset = decoder_key_offset
-		state.decoder_key_size   = decoder_key_size
-		state.decoder_key_pack   = decoder_key_pack
-		state.decoder_stub       = nil
+  #
+  # Initializes the encoding state supplied as an argument to the attributes
+  # that have been defined for this decoder stub, such as key offset, size,
+  # and pack.
+  #
+  def init_state(state)
+    # Update the state with default decoder information
+    state.decoder_key_offset = decoder_key_offset
+    state.decoder_key_size   = decoder_key_size
+    state.decoder_key_pack   = decoder_key_pack
+    state.decoder_stub       = nil
 
-		# Restore the original buffer in case it was modified.
-		state.buf                = state.orig_buf
-	end
+    # Restore the original buffer in case it was modified.
+    state.buf                = state.orig_buf
+  end
 
-	#
-	# This provides a hook method for platform specific
-	# processing prior to the rest of encode() running
-	#
-	def init_platform(platform)
+  #
+  # This provides a hook method for platform specific
+  # processing prior to the rest of encode() running
+  #
+  def init_platform(platform)
 
-	end
-	#
-	# Obtains the key to use during encoding.  If context encoding is enabled,
-	# special steps are taken.  Otherwise, the derived class is given an
-	# opportunity to find the key.
-	#
-	def obtain_key(buf, badchars, state)
-		if datastore['EnableContextEncoding']
-			return find_context_key(buf, badchars, state)
-		else
-			return find_key(buf, badchars, state)
-		end
-	end
+  end
+  #
+  # Obtains the key to use during encoding.  If context encoding is enabled,
+  # special steps are taken.  Otherwise, the derived class is given an
+  # opportunity to find the key.
+  #
+  def obtain_key(buf, badchars, state)
+    if datastore['EnableContextEncoding']
+      return find_context_key(buf, badchars, state)
+    else
+      return find_key(buf, badchars, state)
+    end
+  end
 
-	#
-	# This method finds a compatible key for the supplied buffer based also on
-	# the supplied bad characters list.  This is meant to make encoders more
-	# reliable and less prone to bad character failure by doing a fairly
-	# complete key search before giving up on an encoder.
-	#
-	def find_key(buf, badchars, state)
-		# Otherwise, we use the traditional method
-		key_bytes = [ ]
-		cur_key   = [ ]
-		bad_keys  = find_bad_keys(buf, badchars)
-		found     = false
-		allset    = [*(0..255)]
+  #
+  # This method finds a compatible key for the supplied buffer based also on
+  # the supplied bad characters list.  This is meant to make encoders more
+  # reliable and less prone to bad character failure by doing a fairly
+  # complete key search before giving up on an encoder.
+  #
+  def find_key(buf, badchars, state)
+    # Otherwise, we use the traditional method
+    key_bytes = [ ]
+    cur_key   = [ ]
+    bad_keys  = find_bad_keys(buf, badchars)
+    found     = false
+    allset    = [*(0..255)]
 
-		# Keep chugging until we find something...right
-		while (!found)
-			# Scan each byte position
-			0.upto(decoder_key_size - 1) { |index|
+    # Keep chugging until we find something...right
+    while (!found)
+      # Scan each byte position
+      0.upto(decoder_key_size - 1) { |index|
 
-				# Subtract the bad and leave the good
-				good_keys = allset - bad_keys[index].keys
+        # Subtract the bad and leave the good
+        good_keys = allset - bad_keys[index].keys
 
-				# Was there anything left for this index?
-				if (good_keys.length == 0)
-					# Not much we can do about this :(
-					return nil
-				end
+        # Was there anything left for this index?
+        if (good_keys.length == 0)
+          # Not much we can do about this :(
+          return nil
+        end
 
-				# Set the appropriate key byte
-				key_bytes[index] = good_keys[ rand(good_keys.length) ]
-			}
+        # Set the appropriate key byte
+        key_bytes[index] = good_keys[ rand(good_keys.length) ]
+      }
 
-			# Assume that we're going to rock this...
-			found = true
+      # Assume that we're going to rock this...
+      found = true
 
-			# Scan each byte and see what we've got going on to make sure
-			# no funny business is happening
-			key_bytes.each { |byte|
-				if (badchars.index(byte.chr) != nil)
-					found = false
-				end
-			}
+      # Scan each byte and see what we've got going on to make sure
+      # no funny business is happening
+      key_bytes.each { |byte|
+        if (badchars.index(byte.chr) != nil)
+          found = false
+        end
+      }
 
-			found = find_key_verify(buf, key_bytes, badchars) if found
-		end
+      found = find_key_verify(buf, key_bytes, badchars) if found
+    end
 
-		# Do we have all the key bytes accounted for?
-		if (key_bytes.length != decoder_key_size)
-			return nil
-		end
+    # Do we have all the key bytes accounted for?
+    if (key_bytes.length != decoder_key_size)
+      return nil
+    end
 
-		return key_bytes_to_integer(key_bytes)
-	end
+    return key_bytes_to_integer(key_bytes)
+  end
 
-	#
-	# Parses a context information file in an effort to find a compatible key
-	#
-	def find_context_key(buf, badchars, state)
-		# Make sure our context information file is sane
-		if File.exists?(datastore['ContextInformationFile']) == false
-			raise NoKeyError, "A context information file must specified when using context encoding", caller
-		end
+  #
+  # Parses a context information file in an effort to find a compatible key
+  #
+  def find_context_key(buf, badchars, state)
+    # Make sure our context information file is sane
+    if File.exists?(datastore['ContextInformationFile']) == false
+      raise NoKeyError, "A context information file must specified when using context encoding", caller
+    end
 
-		# Holds the address and key that we ultimately find
-		address = nil
-		key = nil
+    # Holds the address and key that we ultimately find
+    address = nil
+    key = nil
 
-		# Now, parse records from the information file searching for entries
-		# that are compatible with our bad character set
-		File.open(datastore['ContextInformationFile']) { |f|
-			begin
-				# Keep looping until we hit an EOF error or we find
-				# a compatible key
-				while key.nil?
-					# Read in the header
-					type, chunk_base_address, size = f.read(9).unpack('CNN')
-					offset = 0
+    # Now, parse records from the information file searching for entries
+    # that are compatible with our bad character set
+    File.open(datastore['ContextInformationFile']) { |f|
+      begin
+        # Keep looping until we hit an EOF error or we find
+        # a compatible key
+        while key.nil?
+          # Read in the header
+          type, chunk_base_address, size = f.read(9).unpack('CNN')
+          offset = 0
 
-					# Read in the blob of data that will act as our key state
-					data = f.read(size)
+          # Read in the blob of data that will act as our key state
+          data = f.read(size)
 
-					# If the address doesn't contain bad characters, check to see
-					# the data itself will result in bad characters being generated
-					while data.length > decoder_key_size
-						# Extract the current set of key bytes
-						key_bytes = []
+          # If the address doesn't contain bad characters, check to see
+          # the data itself will result in bad characters being generated
+          while data.length > decoder_key_size
+            # Extract the current set of key bytes
+            key_bytes = []
 
-						# My ruby is rusty
-						data[0, decoder_key_size].each_byte { |b|
-							key_bytes << b
-						}
+            # My ruby is rusty
+            data[0, decoder_key_size].each_byte { |b|
+              key_bytes << b
+            }
 
-						# If the key verifies correctly, we need to check it's address
-						if find_key_verify(buf, key_bytes, badchars)
-							address = chunk_base_address + offset
+            # If the key verifies correctly, we need to check it's address
+            if find_key_verify(buf, key_bytes, badchars)
+              address = chunk_base_address + offset
 
-							# Pack it to byte form so that we can check each byte for
-							# bad characters
-							address_bytes = integer_to_key_bytes(address)
+              # Pack it to byte form so that we can check each byte for
+              # bad characters
+              address_bytes = integer_to_key_bytes(address)
 
-							# Scan each byte and see what we've got going on to make sure
-							# no funny business is happening with the address
-							invalid_key = false
-							address_bytes.each { |byte|
-								if badchars.index(byte.chr)
-									invalid_key = true
-								end
-							}
+              # Scan each byte and see what we've got going on to make sure
+              # no funny business is happening with the address
+              invalid_key = false
+              address_bytes.each { |byte|
+                if badchars.index(byte.chr)
+                  invalid_key = true
+                end
+              }
 
-							if invalid_key == false
-								key = key_bytes_to_integer(key_bytes)
-								break
-							end
-						end
+              if invalid_key == false
+                key = key_bytes_to_integer(key_bytes)
+                break
+              end
+            end
 
-						# If it didn't verify, then we need to proceed
-						data = data[1, data.length - 1]
-						offset += 1
-					end
-				end
-			rescue EOFError
-			end
-		}
+            # If it didn't verify, then we need to proceed
+            data = data[1, data.length - 1]
+            offset += 1
+          end
+        end
+      rescue EOFError
+      end
+    }
 
-		# If the key is nil after all is said and done, then we failed to locate
-		# a compatible context-sensitive key
-		if key.nil?
-			raise NoKeyError, "No context key could be located in #{datastore['ContextInformationFile']}", caller
-		# Otherwise, we successfully determined the key, now we need to update
-		# the encoding state with our context address and set context encoding
-		# to true so that the encoders know to use it
-		else
-			ilog("#{refname}: Successfully found context address @ #{"%.8x" % address} using key #{"%.8x" % key}")
+    # If the key is nil after all is said and done, then we failed to locate
+    # a compatible context-sensitive key
+    if key.nil?
+      raise NoKeyError, "No context key could be located in #{datastore['ContextInformationFile']}", caller
+    # Otherwise, we successfully determined the key, now we need to update
+    # the encoding state with our context address and set context encoding
+    # to true so that the encoders know to use it
+    else
+      ilog("#{refname}: Successfully found context address @ #{"%.8x" % address} using key #{"%.8x" % key}")
 
-			state.context_address  = address
-			state.context_encoding = true
-		end
+      state.context_address  = address
+      state.context_encoding = true
+    end
 
-		return key
-	end
+    return key
+  end
 
-	#
-	# Returns the list of bad keys associated with this encoder.
-	#
-	def find_bad_keys(buf, badchars)
-		return Array.new(decoder_key_size) { Hash.new }
-	end
+  #
+  # Returns the list of bad keys associated with this encoder.
+  #
+  def find_bad_keys(buf, badchars)
+    return Array.new(decoder_key_size) { Hash.new }
+  end
 
-	#
-	# Returns the index of any bad characters found in the supplied buffer.
-	#
-	def has_badchars?(buf, badchars)
-		badchars.each_byte { |badchar|
-			idx = buf.index(badchar.chr)
+  #
+  # Returns the index of any bad characters found in the supplied buffer.
+  #
+  def has_badchars?(buf, badchars)
+    badchars.each_byte { |badchar|
+      idx = buf.index(badchar.chr)
 
-			if (idx != nil)
-				return idx
-			end
-		}
+      if (idx != nil)
+        return idx
+      end
+    }
 
-		return nil
-	end
+    return nil
+  end
 
-	#
-	# Convert individual key bytes into a single integer based on the
-	# decoder's key size and packing requirements
-	#
-	def key_bytes_to_integer(key_bytes)
-		return key_bytes_to_buffer(key_bytes).unpack(decoder_key_pack)[0]
-	end
+  #
+  # Convert individual key bytes into a single integer based on the
+  # decoder's key size and packing requirements
+  #
+  def key_bytes_to_integer(key_bytes)
+    return key_bytes_to_buffer(key_bytes).unpack(decoder_key_pack)[0]
+  end
 
-	#
-	# Convert individual key bytes into a byte buffer
-	#
-	def key_bytes_to_buffer(key_bytes)
-		return key_bytes.pack('C*')[0, decoder_key_size]
-	end
+  #
+  # Convert individual key bytes into a byte buffer
+  #
+  def key_bytes_to_buffer(key_bytes)
+    return key_bytes.pack('C*')[0, decoder_key_size]
+  end
 
-	#
-	# Convert an integer into the individual key bytes based on the
-	# decoder's key size and packing requirements
-	#
-	def integer_to_key_bytes(integer)
-		return [ integer.to_i ].pack(decoder_key_pack).unpack('C*')[0, decoder_key_size]
-	end
+  #
+  # Convert an integer into the individual key bytes based on the
+  # decoder's key size and packing requirements
+  #
+  def integer_to_key_bytes(integer)
+    return [ integer.to_i ].pack(decoder_key_pack).unpack('C*')[0, decoder_key_size]
+  end
 
-	#
-	# Determines if the key selected by find_key is usable
-	#
-	def find_key_verify(buf, key_bytes, badchars)
-		true
-	end
+  #
+  # Determines if the key selected by find_key is usable
+  #
+  def find_key_verify(buf, key_bytes, badchars)
+    true
+  end
 
 end
 

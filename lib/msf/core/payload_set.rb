@@ -383,47 +383,47 @@ class PayloadSet < ModuleSet
 
 protected
 
-	#
-	# Return the hash of single payloads
-	#
-	def _singles
-		return payload_type_modules[Payload::Type::Single] || {}
-	end
+  #
+  # Return the hash of single payloads
+  #
+  def _singles
+    return payload_type_modules[Payload::Type::Single] || {}
+  end
 
-	#
-	# Return the hash of stager payloads
-	#
-	def _stagers
-		return payload_type_modules[Payload::Type::Stager] || {}
-	end
+  #
+  # Return the hash of stager payloads
+  #
+  def _stagers
+    return payload_type_modules[Payload::Type::Stager] || {}
+  end
 
-	#
-	# Return the hash of stage payloads
-	#
-	def _stages
-		return payload_type_modules[Payload::Type::Stage] || {}
-	end
+  #
+  # Return the hash of stage payloads
+  #
+  def _stages
+    return payload_type_modules[Payload::Type::Stage] || {}
+  end
 
-	#
-	# Builds a duplicate, extended version of the Payload base
-	# class using the supplied modules.
-	#
-	def build_payload(*modules)
-		klass = Class.new(Payload)
+  #
+  # Builds a duplicate, extended version of the Payload base
+  # class using the supplied modules.
+  #
+  def build_payload(*modules)
+    klass = Class.new(Payload)
 
-		# Remove nil modules
-		modules.compact!
+    # Remove nil modules
+    modules.compact!
 
-		# Include the modules supplied to us with the mad skillz
-		# spoonfu style
-		klass.include(*modules.reverse)
+    # Include the modules supplied to us with the mad skillz
+    # spoonfu style
+    klass.include(*modules.reverse)
 
-		return klass
-	end
+    return klass
+  end
 
-	attr_accessor :payload_type_modules # :nodoc:
-	attr_writer   :stages, :singles, :sizes # :nodoc:
-	attr_accessor :_instances # :nodoc:
+  attr_accessor :payload_type_modules # :nodoc:
+  attr_writer   :stages, :singles, :sizes # :nodoc:
+  attr_accessor :_instances # :nodoc:
 
 end
 
