@@ -72,8 +72,8 @@ module Metasploit3
     ], self.class)
   end
 
-	def payload
-		p = super
+  def payload
+    p = super
 
     i = p.index("X" * 63)
     u = datastore['LHOST'].to_s + "\x00"

@@ -55,12 +55,12 @@ module Payload::Windows::LoadLibrary
       ], self.class)
   end
 
-	#
-	# Constructs the payload
-	#
-	def payload
-		return super + dll_string + "\x00"
-	end
+  #
+  # Constructs the payload
+  #
+  def payload
+    return super + dll_string + "\x00"
+  end
 
   #
   # Returns the command string to use for execution

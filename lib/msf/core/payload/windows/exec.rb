@@ -55,12 +55,12 @@ module Payload::Windows::Exec
       ], Msf::Payload::Windows::Exec)
   end
 
-	#
-	# Constructs the payload
-	#
-	def payload
-		return super + command_string + "\x00"
-	end
+  #
+  # Constructs the payload
+  #
+  def payload
+    return super + command_string + "\x00"
+  end
 
   #
   # Returns the command string to use for execution

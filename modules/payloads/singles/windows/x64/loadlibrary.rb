@@ -58,9 +58,9 @@ module Metasploit3
       ], self.class )
   end
 
-	def payload
-		return super + dll_string + "\x00"
-	end
+  def payload
+    return super + dll_string + "\x00"
+  end
 
   def dll_string
     return datastore['DLL'] || ''
