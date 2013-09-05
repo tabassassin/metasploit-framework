@@ -180,36 +180,36 @@ module Services
   def service_create(name, display_name, executable_on_host, startup=2, server=nil)
     adv = session.railgun.advapi32
 
-		# SC_MANAGER_CONNECT	       0x01
-		# SC_MANAGER_CREATE_SERVICE    0x02
-		# SC_MANAGER_QUERY_LOCK_STATUS 0x10
-		open_sc_manager(:host=>server, :access=>0x13) do |manager|
-			# SC_HANDLE WINAPI CreateService(
-			#  __in       SC_HANDLE hSCManager,
-			#  __in       LPCTSTR lpServiceName,
-			#  __in_opt   LPCTSTR lpDisplayName,
-			#  __in       DWORD dwDesiredAccess,
-			#  __in       DWORD dwServiceType,
-			#  __in       DWORD dwStartType,
-			#  __in       DWORD dwErrorControl,
-			#  __in_opt   LPCTSTR lpBinaryPathName,
-			#  __in_opt   LPCTSTR lpLoadOrderGroup,
-			#  __out_opt  LPDWORD lpdwTagId,
-			#  __in_opt   LPCTSTR lpDependencies,
-			#  __in_opt   LPCTSTR lpServiceStartName,
-			#  __in_opt   LPCTSTR lpPassword
-			#);
-			newservice = adv.CreateServiceA(manager, name, display_name,
-				0x0010, 0X00000010, startup, 0, executable_on_host,
-				nil, nil, nil, nil, nil)
-			adv.CloseServiceHandle(newservice["return"])
-			if newservice["GetLastError"] == 0
-				return true
-			else
-				return false
-			end
-		end
-	end
+    # SC_MANAGER_CONNECT	       0x01
+    # SC_MANAGER_CREATE_SERVICE    0x02
+    # SC_MANAGER_QUERY_LOCK_STATUS 0x10
+    open_sc_manager(:host=>server, :access=>0x13) do |manager|
+      # SC_HANDLE WINAPI CreateService(
+      #  __in       SC_HANDLE hSCManager,
+      #  __in       LPCTSTR lpServiceName,
+      #  __in_opt   LPCTSTR lpDisplayName,
+      #  __in       DWORD dwDesiredAccess,
+      #  __in       DWORD dwServiceType,
+      #  __in       DWORD dwStartType,
+      #  __in       DWORD dwErrorControl,
+      #  __in_opt   LPCTSTR lpBinaryPathName,
+      #  __in_opt   LPCTSTR lpLoadOrderGroup,
+      #  __out_opt  LPDWORD lpdwTagId,
+      #  __in_opt   LPCTSTR lpDependencies,
+      #  __in_opt   LPCTSTR lpServiceStartName,
+      #  __in_opt   LPCTSTR lpPassword
+      #);
+      newservice = adv.CreateServiceA(manager, name, display_name,
+        0x0010, 0X00000010, startup, 0, executable_on_host,
+        nil, nil, nil, nil, nil)
+      adv.CloseServiceHandle(newservice["return"])
+      if newservice["GetLastError"] == 0
+        return true
+      else
+        return false
+      end
+    end
+  end
 
   #
   # Start a service.
@@ -288,69 +288,69 @@ module Services
   def service_delete(name, server=nil)
     adv = session.railgun.advapi32
 
-		open_sc_manager(:host=>server) do |manager|
-			# Now to grab a handle to the service.
-			# Thank you, Wine project for defining the DELETE constant since it,
-			# and all its friends, are missing from the MSDN docs.
-			# #define DELETE		     0x00010000
-			handle = adv.OpenServiceA(manager, name, 0x10000)
-			if (handle["return"] == 0)
-				raise RuntimeError.new("Could not open service. OpenServiceA error: #{handle["GetLastError"]}")
-			end
+    open_sc_manager(:host=>server) do |manager|
+      # Now to grab a handle to the service.
+      # Thank you, Wine project for defining the DELETE constant since it,
+      # and all its friends, are missing from the MSDN docs.
+      # #define DELETE		     0x00010000
+      handle = adv.OpenServiceA(manager, name, 0x10000)
+      if (handle["return"] == 0)
+        raise RuntimeError.new("Could not open service. OpenServiceA error: #{handle["GetLastError"]}")
+      end
 
       # Lastly, delete it
       adv.DeleteService(handle["return"])
 
       adv.CloseServiceHandle(handle["return"])
 
-			handle["GetLastError"]
-		end
-	end
+      handle["GetLastError"]
+    end
+  end
 
-	#
-	# Query Service Status
-	#
-	# @param (see #service_start)
-	#
-	# @return {} representing lpServiceStatus
-	#
-	# @raise (see #service_start)
-	#
-	#
-	def service_status(name, server=nil)
-		adv = session.railgun.advapi32
-		ret = nil
+  #
+  # Query Service Status
+  #
+  # @param (see #service_start)
+  #
+  # @return {} representing lpServiceStatus
+  #
+  # @raise (see #service_start)
+  #
+  #
+  def service_status(name, server=nil)
+    adv = session.railgun.advapi32
+    ret = nil
 
-		# 0x80000000 GENERIC_READ
-		open_sc_manager(:host=>server, :access=>0x80000000) do |manager|
-			# Now to grab a handle to the service.
-			handle = adv.OpenServiceA(manager, name, 0x80000000)
-			if (handle["return"] == 0)
-				raise RuntimeError.new("Could not open service. OpenServiceA error: #{handle["GetLastError"]}")
-			end
+    # 0x80000000 GENERIC_READ
+    open_sc_manager(:host=>server, :access=>0x80000000) do |manager|
+      # Now to grab a handle to the service.
+      handle = adv.OpenServiceA(manager, name, 0x80000000)
+      if (handle["return"] == 0)
+        raise RuntimeError.new("Could not open service. OpenServiceA error: #{handle["GetLastError"]}")
+      end
 
-			status = adv.QueryServiceStatus(handle["return"],28)
-			if (status["return"] == 0)
-				raise RuntimeError.new("Could not query service. QueryServiceStatus error: #{handle["GetLastError"]}")
-			end
+      status = adv.QueryServiceStatus(handle["return"],28)
+      if (status["return"] == 0)
+        raise RuntimeError.new("Could not query service. QueryServiceStatus error: #{handle["GetLastError"]}")
+      end
 
-			vals = status['lpServiceStatus'].unpack('L*')
+      vals = status['lpServiceStatus'].unpack('L*')
 
-			adv.CloseServiceHandle(handle["return"])
+      adv.CloseServiceHandle(handle["return"])
 
-			ret = { :type=>		     vals[0],
-				:state=>	     vals[1],
-				:controls_accepted=> vals[2],
-				:win32_exit_code=>   vals[3],
-				:service_exit_code=> vals[4],
-				:check_point=>	     vals[5],
-				:wait_hint=>	     vals[6],
-			}
+      ret = { :type=>		     vals[0],
+        :state=>	     vals[1],
+        :controls_accepted=> vals[2],
+        :win32_exit_code=>   vals[3],
+        :service_exit_code=> vals[4],
+        :check_point=>	     vals[5],
+        :wait_hint=>	     vals[6],
+      }
 
-		end
+    end
 
-		return ret
-	end
+    return ret
+  end
 end
 
 end
