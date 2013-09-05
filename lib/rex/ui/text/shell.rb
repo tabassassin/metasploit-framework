@@ -341,51 +341,51 @@ module Shell
 
 protected
 
-	#
-	# Parse a line into an array of arguments.
-	#
-	def parse_line(line)
-		log_input(line)
+  #
+  # Parse a line into an array of arguments.
+  #
+  def parse_line(line)
+    log_input(line)
 
-		line.gsub!(/(\r|\n)/, '')
+    line.gsub!(/(\r|\n)/, '')
 
-		begin
-			return args = Rex::Parser::Arguments.from_s(line)
-		rescue ::ArgumentError
-			print_error("Parse error: #{$!}")
-		end
+    begin
+      return args = Rex::Parser::Arguments.from_s(line)
+    rescue ::ArgumentError
+      print_error("Parse error: #{$!}")
+    end
 
-		return []
-	end
+    return []
+  end
 
-	#
-	# Print the prompt, but do not log it.
-	#
-	def _print_prompt(prompt)
-		output.print(prompt)
-	end
+  #
+  # Print the prompt, but do not log it.
+  #
+  def _print_prompt(prompt)
+    output.print(prompt)
+  end
 
-	#
-	# Writes the supplied input to the log source if one has been registered.
-	#
-	def log_input(buf)
-		rlog(buf, log_source) if (log_source)
-	end
+  #
+  # Writes the supplied input to the log source if one has been registered.
+  #
+  def log_input(buf)
+    rlog(buf, log_source) if (log_source)
+  end
 
-	#
-	# Writes the supplied output to the log source if one has been registered.
-	#
-	def log_output(buf)
-		rlog(buf, log_source) if (log_source)
-	end
+  #
+  # Writes the supplied output to the log source if one has been registered.
+  #
+  def log_output(buf)
+    rlog(buf, log_source) if (log_source)
+  end
 
-	attr_writer   :input, :output # :nodoc:
-	attr_accessor :stop_flag, :init_prompt # :nodoc:
-	attr_accessor :prompt # :nodoc:
-	attr_accessor :prompt_char, :tab_complete_proc # :nodoc:
-	attr_accessor :histfile # :nodoc:
-	attr_accessor :hist_last_saved # the number of history lines when last saved/loaded
-	attr_accessor :log_source, :stop_count # :nodoc:
+  attr_writer   :input, :output # :nodoc:
+  attr_accessor :stop_flag, :init_prompt # :nodoc:
+  attr_accessor :prompt # :nodoc:
+  attr_accessor :prompt_char, :tab_complete_proc # :nodoc:
+  attr_accessor :histfile # :nodoc:
+  attr_accessor :hist_last_saved # the number of history lines when last saved/loaded
+  attr_accessor :log_source, :stop_count # :nodoc:
 
 end
 
@@ -395,7 +395,7 @@ end
 #
 ###
 class PseudoShell
-	include Shell
+  include Shell
 end
 
 

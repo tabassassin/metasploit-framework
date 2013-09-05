@@ -814,74 +814,74 @@ class Console::CommandDispatcher::Core
 
 protected
 
-	attr_accessor :extensions # :nodoc:
-	attr_accessor :bgjobs, :bgjob_id # :nodoc:
+  attr_accessor :extensions # :nodoc:
+  attr_accessor :bgjobs, :bgjob_id # :nodoc:
 
-	CommDispatcher = Console::CommandDispatcher
+  CommDispatcher = Console::CommandDispatcher
 
-	#
-	# Loads the client extension specified in mod
-	#
-	def add_extension_client(mod)
-		loaded = false
-		klass = nil
-		self.class.client_extension_search_paths.each do |path|
-			path = ::File.join(path, "#{mod}.rb")
-			klass = CommDispatcher.check_hash(path)
-			if (klass == nil)
-				old   = CommDispatcher.constants
-				next unless ::File.exist? path
+  #
+  # Loads the client extension specified in mod
+  #
+  def add_extension_client(mod)
+    loaded = false
+    klass = nil
+    self.class.client_extension_search_paths.each do |path|
+      path = ::File.join(path, "#{mod}.rb")
+      klass = CommDispatcher.check_hash(path)
+      if (klass == nil)
+        old   = CommDispatcher.constants
+        next unless ::File.exist? path
 
-				if (require(path))
-					new  = CommDispatcher.constants
-					diff = new - old
+        if (require(path))
+          new  = CommDispatcher.constants
+          diff = new - old
 
-					next if (diff.empty?)
+          next if (diff.empty?)
 
-					klass = CommDispatcher.const_get(diff[0])
+          klass = CommDispatcher.const_get(diff[0])
 
-					CommDispatcher.set_hash(path, klass)
-					loaded = true
-					break
-				else
-					print_error("Failed to load client script file: #{path}")
-					return false
-				end
-			else
-				# the klass is already loaded, from a previous invocation
-				loaded = true
-				break
-			end
-		end
-		unless loaded
-			print_error("Failed to load client portion of #{mod}.")
-			return false
-		end
+          CommDispatcher.set_hash(path, klass)
+          loaded = true
+          break
+        else
+          print_error("Failed to load client script file: #{path}")
+          return false
+        end
+      else
+        # the klass is already loaded, from a previous invocation
+        loaded = true
+        break
+      end
+    end
+    unless loaded
+      print_error("Failed to load client portion of #{mod}.")
+      return false
+    end
 
-		# Enstack the dispatcher
-		self.shell.enstack_dispatcher(klass)
+    # Enstack the dispatcher
+    self.shell.enstack_dispatcher(klass)
 
-		# Insert the module into the list of extensions
-		self.extensions << mod
-	end
+    # Insert the module into the list of extensions
+    self.extensions << mod
+  end
 
-	def tab_complete_postmods
-		tabs = client.framework.modules.post.map { |name,klass|
-			mod = client.framework.modules.post.create(name)
-			if mod and mod.session_compatible?(client)
-				mod.fullname.dup
-			else
-				nil
-			end
-		}
+  def tab_complete_postmods
+    tabs = client.framework.modules.post.map { |name,klass|
+      mod = client.framework.modules.post.create(name)
+      if mod and mod.session_compatible?(client)
+        mod.fullname.dup
+      else
+        nil
+      end
+    }
 
-		# nils confuse readline
-		tabs.compact
-	end
+    # nils confuse readline
+    tabs.compact
+  end
 
-	def tab_complete_channels
-		client.channels.keys.map { |k| k.to_s }
-	end
+  def tab_complete_channels
+    client.channels.keys.map { |k| k.to_s }
+  end
 
 end
 

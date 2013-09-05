@@ -623,86 +623,86 @@ class Driver < Msf::Ui::Driver
 
 protected
 
-	attr_writer   :framework # :nodoc:
-	attr_writer   :command_passthru # :nodoc:
+  attr_writer   :framework # :nodoc:
+  attr_writer   :command_passthru # :nodoc:
 
-	#
-	# If an unknown command was passed, try to see if it's a valid local
-	# executable.  This is only allowed if command passthru has been permitted
-	#
-	def unknown_command(method, line)
+  #
+  # If an unknown command was passed, try to see if it's a valid local
+  # executable.  This is only allowed if command passthru has been permitted
+  #
+  def unknown_command(method, line)
 
-		[method, method+".exe"].each do |cmd|
-			if (command_passthru == true and Rex::FileUtils.find_full_path(cmd))
+    [method, method+".exe"].each do |cmd|
+      if (command_passthru == true and Rex::FileUtils.find_full_path(cmd))
 
-				print_status("exec: #{line}")
-				print_line('')
+        print_status("exec: #{line}")
+        print_line('')
 
-				self.busy = true
-				begin
-					io = ::IO.popen(line, "r")
-					io.each_line do |data|
-						print(data)
-					end
-					io.close
-				rescue ::Errno::EACCES, ::Errno::ENOENT
-					print_error("Permission denied exec: #{line}")
-				end
-				self.busy = false
-				return
-			end
-		end
+        self.busy = true
+        begin
+          io = ::IO.popen(line, "r")
+          io.each_line do |data|
+            print(data)
+          end
+          io.close
+        rescue ::Errno::EACCES, ::Errno::ENOENT
+          print_error("Permission denied exec: #{line}")
+        end
+        self.busy = false
+        return
+      end
+    end
 
-		super
-	end
+    super
+  end
 
-	##
-	#
-	# Handlers for various global configuration values
-	#
-	##
+  ##
+  #
+  # Handlers for various global configuration values
+  #
+  ##
 
-	#
-	# SessionLogging.
-	#
-	def handle_session_logging(val)
-		if (val =~ /^(y|t|1)/i)
-			Msf::Logging.enable_session_logging(true)
-			print_line("Session logging will be enabled for future sessions.")
-		else
-			Msf::Logging.enable_session_logging(false)
-			print_line("Session logging will be disabled for future sessions.")
-		end
-	end
+  #
+  # SessionLogging.
+  #
+  def handle_session_logging(val)
+    if (val =~ /^(y|t|1)/i)
+      Msf::Logging.enable_session_logging(true)
+      print_line("Session logging will be enabled for future sessions.")
+    else
+      Msf::Logging.enable_session_logging(false)
+      print_line("Session logging will be disabled for future sessions.")
+    end
+  end
 
-	#
-	# ConsoleLogging.
-	#
-	def handle_console_logging(val)
-		if (val =~ /^(y|t|1)/i)
-			Msf::Logging.enable_log_source('console')
-			print_line("Console logging is now enabled.")
+  #
+  # ConsoleLogging.
+  #
+  def handle_console_logging(val)
+    if (val =~ /^(y|t|1)/i)
+      Msf::Logging.enable_log_source('console')
+      print_line("Console logging is now enabled.")
 
-			set_log_source('console')
+      set_log_source('console')
 
-			rlog("\n[*] Console logging started: #{Time.now}\n\n", 'console')
-		else
-			rlog("\n[*] Console logging stopped: #{Time.now}\n\n", 'console')
+      rlog("\n[*] Console logging started: #{Time.now}\n\n", 'console')
+    else
+      rlog("\n[*] Console logging stopped: #{Time.now}\n\n", 'console')
 
-			unset_log_source
+      unset_log_source
 
-			Msf::Logging.disable_log_source('console')
-			print_line("Console logging is now disabled.")
-		end
-	end
+      Msf::Logging.disable_log_source('console')
+      print_line("Console logging is now disabled.")
+    end
+  end
 
-	#
-	# This method handles adjusting the global log level threshold.
-	#
-	def handle_loglevel(val)
-		set_log_level(Rex::LogSource, val)
-		set_log_level(Msf::LogSource, val)
-	end
+  #
+  # This method handles adjusting the global log level threshold.
+  #
+  def handle_loglevel(val)
+    set_log_level(Rex::LogSource, val)
+    set_log_level(Msf::LogSource, val)
+  end
 
 end
 
@@ -711,9 +711,9 @@ end
 # defanged being true
 #
 class DefangedException < ::Exception
-	def to_s
-		"This functionality is currently disabled (defanged mode)"
-	end
+  def to_s
+    "This functionality is currently disabled (defanged mode)"
+  end
 end
 
 end

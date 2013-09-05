@@ -468,7 +468,7 @@ class Meterpreter < Rex::Post::Meterpreter::Client
 
 protected
 
-	attr_accessor :rstream # :nodoc:
+  attr_accessor :rstream # :nodoc:
 
 end
 

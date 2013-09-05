@@ -128,8 +128,8 @@ class Console
 
 protected
 
-	attr_writer :client # :nodoc:
-	attr_accessor :commands # :nodoc:
+  attr_writer :client # :nodoc:
+  attr_accessor :commands # :nodoc:
 
 end
 
