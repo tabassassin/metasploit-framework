@@ -12,191 +12,191 @@ module Msf
 ###
 class Framework
 
-	#
-	# Versioning information
-	#
+  #
+  # Versioning information
+  #
 
-	Major    = 4
-	Minor    = 8
-	Point    = 0
-	Release  = "-dev"
+  Major    = 4
+  Minor    = 8
+  Point    = 0
+  Release  = "-dev"
 
-	if(Point)
-		Version  = "#{Major}.#{Minor}.#{Point}#{Release}"
-	else
-		Version  = "#{Major}.#{Minor}#{Release}"
-	end
+  if(Point)
+    Version  = "#{Major}.#{Minor}.#{Point}#{Release}"
+  else
+    Version  = "#{Major}.#{Minor}#{Release}"
+  end
 
-	Revision = "$Revision$"
-
-
-	# Repository information
-	RepoRevision        = ::Msf::Util::SVN.revision
-	RepoUpdated         = ::Msf::Util::SVN.updated
-	RepoUpdatedDays     = ::Msf::Util::SVN.days_since_update
-	RepoUpdatedDaysNote = ::Msf::Util::SVN.last_updated_friendly
-	RepoUpdatedDate     = ::Msf::Util::SVN.last_updated_date
-	RepoRoot            = ::Msf::Util::SVN.root
-
-	# EICAR canary
-	EICARCorrupted      = ::Msf::Util::EXE.is_eicar_corrupted?
-
-	# API Version
-	APIMajor = 1
-	APIMinor = 0
-
-	# Base/API Version
-	VersionCore  = Major + (Minor / 10.0)
-	VersionAPI   = APIMajor + (APIMinor / 10.0)
-
-	#
-	# Mixin meant to be included into all classes that can have instances that
-	# should be tied to the framework, such as modules.
-	#
-	module Offspring
-
-		#
-		# A reference to the framework instance from which this offspring was
-		# derived.
-		#
-		attr_accessor :framework
-	end
-
-	require 'msf/core/thread_manager'
-	require 'msf/core/module_manager'
-	require 'msf/core/session_manager'
-	require 'msf/core/plugin_manager'
-	require 'msf/core/db_manager'
-	require 'msf/core/event_dispatcher'
+  Revision = "$Revision$"
 
 
-	#
-	# Creates an instance of the framework context.
-	#
-	def initialize(opts={})
+  # Repository information
+  RepoRevision        = ::Msf::Util::SVN.revision
+  RepoUpdated         = ::Msf::Util::SVN.updated
+  RepoUpdatedDays     = ::Msf::Util::SVN.days_since_update
+  RepoUpdatedDaysNote = ::Msf::Util::SVN.last_updated_friendly
+  RepoUpdatedDate     = ::Msf::Util::SVN.last_updated_date
+  RepoRoot            = ::Msf::Util::SVN.root
 
-		# Allow specific module types to be loaded
-		types = opts[:module_types] || Metasploit::Model::Module::Type::ALL
+  # EICAR canary
+  EICARCorrupted      = ::Msf::Util::EXE.is_eicar_corrupted?
 
-		self.threads   = ThreadManager.new(self)
-		self.events    = EventDispatcher.new(self)
-		self.modules   = ModuleManager.new(self,types)
-		self.sessions  = SessionManager.new(self)
-		self.datastore = DataStore.new
-		self.jobs      = Rex::JobContainer.new
-		self.plugins   = PluginManager.new(self)
-		self.db        = DBManager.new(self, opts)
+  # API Version
+  APIMajor = 1
+  APIMinor = 0
 
-		# Configure the thread factory
-		Rex::ThreadFactory.provider = self.threads
+  # Base/API Version
+  VersionCore  = Major + (Minor / 10.0)
+  VersionAPI   = APIMajor + (APIMinor / 10.0)
 
-		subscriber = FrameworkEventSubscriber.new(self)
-		events.add_exploit_subscriber(subscriber)
-		events.add_session_subscriber(subscriber)
-		events.add_general_subscriber(subscriber)
-		events.add_db_subscriber(subscriber)
-		events.add_ui_subscriber(subscriber)
-	end
+  #
+  # Mixin meant to be included into all classes that can have instances that
+  # should be tied to the framework, such as modules.
+  #
+  module Offspring
 
-	def inspect
-		"#<Framework (#{sessions.length} sessions, #{jobs.length} jobs, #{plugins.length} plugins#{db.active ? ", #{db.driver} database active" : ""})>"
-	end
+    #
+    # A reference to the framework instance from which this offspring was
+    # derived.
+    #
+    attr_accessor :framework
+  end
 
-	#
-	# Returns the module set for encoders.
-	#
-	def encoders
-		return modules.encoders
-	end
+  require 'msf/core/thread_manager'
+  require 'msf/core/module_manager'
+  require 'msf/core/session_manager'
+  require 'msf/core/plugin_manager'
+  require 'msf/core/db_manager'
+  require 'msf/core/event_dispatcher'
 
-	#
-	# Returns the module set for exploits.
-	#
-	def exploits
-		return modules.exploits
-	end
 
-	#
-	# Returns the module set for nops
-	#
-	def nops
-		return modules.nops
-	end
+  #
+  # Creates an instance of the framework context.
+  #
+  def initialize(opts={})
 
-	#
-	# Returns the module set for payloads
-	#
-	def payloads
-		return modules.payloads
-	end
+    # Allow specific module types to be loaded
+    types = opts[:module_types] || Metasploit::Model::Module::Type::ALL
 
-	#
-	# Returns the module set for auxiliary modules
-	#
-	def auxiliary
-		return modules.auxiliary
-	end
+    self.threads   = ThreadManager.new(self)
+    self.events    = EventDispatcher.new(self)
+    self.modules   = ModuleManager.new(self,types)
+    self.sessions  = SessionManager.new(self)
+    self.datastore = DataStore.new
+    self.jobs      = Rex::JobContainer.new
+    self.plugins   = PluginManager.new(self)
+    self.db        = DBManager.new(self, opts)
 
-	#
-	# Returns the module set for post modules
-	#
-	def post
-		return modules.post
-	end
+    # Configure the thread factory
+    Rex::ThreadFactory.provider = self.threads
 
-	#
-	# Returns the framework version in Major.Minor format.
-	#
-	def version
-		Version
-	end
+    subscriber = FrameworkEventSubscriber.new(self)
+    events.add_exploit_subscriber(subscriber)
+    events.add_session_subscriber(subscriber)
+    events.add_general_subscriber(subscriber)
+    events.add_db_subscriber(subscriber)
+    events.add_ui_subscriber(subscriber)
+  end
 
-	#
-	# Event management interface for registering event handler subscribers and
-	# for interacting with the correlation engine.
-	#
-	attr_reader   :events
-	#
-	# Module manager that contains information about all loaded modules,
-	# regardless of type.
-	#
-	attr_reader   :modules
-	#
-	# Session manager that tracks sessions associated with this framework
-	# instance over the course of their lifetime.
-	#
-	attr_reader   :sessions
-	#
-	# The global framework datastore that can be used by modules.
-	#
-	attr_reader   :datastore
-	#
-	# The framework instance's aux manager.  The aux manager is responsible
-	# for collecting and catalogging all aux information that comes in from
-	# aux modules.
-	#
-	attr_reader   :auxmgr
-	#
-	# Background job management specific to things spawned from this instance
-	# of the framework.
-	#
-	attr_reader   :jobs
-	#
-	# The framework instance's plugin manager.  The plugin manager is
-	# responsible for exposing an interface that allows for the loading and
-	# unloading of plugins.
-	#
-	attr_reader   :plugins
-	#
-	# The framework instance's db manager. The db manager
-	# maintains the database db and handles db events
-	#
-	attr_reader   :db
-	#
-	# The framework instance's thread manager. The thread manager
-	# provides a cleaner way to manage spawned threads
-	#
-	attr_reader   :threads
+  def inspect
+    "#<Framework (#{sessions.length} sessions, #{jobs.length} jobs, #{plugins.length} plugins#{db.active ? ", #{db.driver} database active" : ""})>"
+  end
+
+  #
+  # Returns the module set for encoders.
+  #
+  def encoders
+    return modules.encoders
+  end
+
+  #
+  # Returns the module set for exploits.
+  #
+  def exploits
+    return modules.exploits
+  end
+
+  #
+  # Returns the module set for nops
+  #
+  def nops
+    return modules.nops
+  end
+
+  #
+  # Returns the module set for payloads
+  #
+  def payloads
+    return modules.payloads
+  end
+
+  #
+  # Returns the module set for auxiliary modules
+  #
+  def auxiliary
+    return modules.auxiliary
+  end
+
+  #
+  # Returns the module set for post modules
+  #
+  def post
+    return modules.post
+  end
+
+  #
+  # Returns the framework version in Major.Minor format.
+  #
+  def version
+    Version
+  end
+
+  #
+  # Event management interface for registering event handler subscribers and
+  # for interacting with the correlation engine.
+  #
+  attr_reader   :events
+  #
+  # Module manager that contains information about all loaded modules,
+  # regardless of type.
+  #
+  attr_reader   :modules
+  #
+  # Session manager that tracks sessions associated with this framework
+  # instance over the course of their lifetime.
+  #
+  attr_reader   :sessions
+  #
+  # The global framework datastore that can be used by modules.
+  #
+  attr_reader   :datastore
+  #
+  # The framework instance's aux manager.  The aux manager is responsible
+  # for collecting and catalogging all aux information that comes in from
+  # aux modules.
+  #
+  attr_reader   :auxmgr
+  #
+  # Background job management specific to things spawned from this instance
+  # of the framework.
+  #
+  attr_reader   :jobs
+  #
+  # The framework instance's plugin manager.  The plugin manager is
+  # responsible for exposing an interface that allows for the loading and
+  # unloading of plugins.
+  #
+  attr_reader   :plugins
+  #
+  # The framework instance's db manager. The db manager
+  # maintains the database db and handles db events
+  #
+  attr_reader   :db
+  #
+  # The framework instance's thread manager. The thread manager
+  # provides a cleaner way to manage spawned threads
+  #
+  attr_reader   :threads
 
 protected
 

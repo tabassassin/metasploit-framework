@@ -5,30 +5,30 @@
 # `validates!` is called, which isn't the case in Metasploit::Framework's
 # usage.
 class Metasploit::Framework::ModelInvalid < Metasploit::Framework::Error
-	#
-	# Attributes
-	#
+  #
+  # Attributes
+  #
 
-	# @!attribute [r] model
-	#   The model that has validation errors.
-	#
-	#   @return [ActiveModel::Validations]
-	attr_reader :model
+  # @!attribute [r] model
+  #   The model that has validation errors.
+  #
+  #   @return [ActiveModel::Validations]
+  attr_reader :model
 
-	#
-	# Methods
-	#
+  #
+  # Methods
+  #
 
-	# @param model [ActiveModel::Validations, #errors] ActiveModel that is
-	#   not valid and havs errors.
-	def initialize(model)
-		@model = model
+  # @param model [ActiveModel::Validations, #errors] ActiveModel that is
+  #   not valid and havs errors.
+  def initialize(model)
+    @model = model
 
-		errors = @model.errors.full_messages.join(', ')
-		translated_message = I18n.translate!(
-				'metasploit.framework.errors.messages.model_invalid',
-				:errors => errors
-		)
-		super(translated_message)
-	end
+    errors = @model.errors.full_messages.join(', ')
+    translated_message = I18n.translate!(
+        'metasploit.framework.errors.messages.model_invalid',
+        :errors => errors
+    )
+    super(translated_message)
+  end
 end

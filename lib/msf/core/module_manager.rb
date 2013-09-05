@@ -112,9 +112,9 @@ module Msf
 
 
     # @param [Msf::Framework] framework The framework for which this instance is
-		#   managing the modules.
+    #   managing the modules.
     # @param [Array<String>] types List of module types to load.  Defaults to
-		#   all module types in `Metasploit::Model::Module::Type::ALL`.
+    #   all module types in `Metasploit::Model::Module::Type::ALL`.
     def initialize(framework, types=Metasploit::Model::Module::Type::ALL)
       #
       # defaults

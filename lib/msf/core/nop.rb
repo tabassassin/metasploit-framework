@@ -10,12 +10,12 @@ module Msf
 ###
 class Nop < Msf::Module
 
-	#
-	# Returns MODULE_NOP to indicate that this is a NOP module.
-	#
-	def self.type
-		Metasploit::Model::Module::Type::NOP
-	end
+  #
+  # Returns MODULE_NOP to indicate that this is a NOP module.
+  #
+  def self.type
+    Metasploit::Model::Module::Type::NOP
+  end
 
   #
   # Initializes the NOP generator, defaulting it to being usable on all
